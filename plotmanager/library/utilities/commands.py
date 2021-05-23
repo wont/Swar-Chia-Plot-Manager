@@ -1,11 +1,15 @@
+from copy import deepcopy
+import json
 import os
 import pathlib
+from plotmanager.library.utilities.health import health_check
+from subprocess import run
 import psutil
 import socket
 import sys
 import time
 
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 
 from plotmanager.library.parse.configuration import get_config_info
 from plotmanager.library.utilities.configuration import test_configuration
@@ -16,6 +20,20 @@ from plotmanager.library.utilities.notifications import send_notifications
 from plotmanager.library.utilities.print import print_view, print_json
 from plotmanager.library.utilities.processes import is_windows, get_manager_processes, get_running_plots, \
     start_process, identify_drive, get_system_drives
+
+
+def serialize(obj):
+    """JSON serializer for objects not serializable by default json code"""
+
+    if isinstance(obj, date):
+        serial = obj.isoformat()
+        return serial
+
+    if isinstance(obj, datetime):
+        serial = obj.isoformat()
+        return serial
+
+    return obj.__dict__
 
 
 def start_manager():
@@ -36,14 +54,17 @@ def start_manager():
 
     load_jobs(config_jobs)
 
-    test_configuration(chia_location=chia_location, notification_settings=notification_settings,
+    test_configuration(chia_location=chia_location,
+                       notification_settings=notification_settings,
                        instrumentation_settings=instrumentation_settings)
 
     extra_args = []
     if is_windows():
-        pythonw_file_path = '\\'.join(python_file_path.split('\\')[:-1] + ['pythonw.exe'])
+        pythonw_file_path = '\\'.join(
+            python_file_path.split('\\')[:-1] + ['pythonw.exe'])
     else:
-        pythonw_file_path = '\\'.join(python_file_path.split('\\')[:-1] + ['python &'])
+        pythonw_file_path = '\\'.join(
+            python_file_path.split('\\')[:-1] + ['python &'])
         extra_args.append('&')
     if os.path.exists(pythonw_file_path):
         python_file_path = pythonw_file_path
@@ -52,7 +73,9 @@ def start_manager():
     start_process(args=args, log_file=debug_log_file)
     time.sleep(3)
     if not get_manager_processes():
-        raise ManagerError('Failed to start Manager. Please look at debug.log for more details on the error. It is in the same folder as manager.py.')
+        raise ManagerError(
+            'Failed to start Manager. Please look at debug.log for more details on the error. It is in the same folder as manager.py.'
+        )
 
     send_notifications(
         title='Plot manager started',
@@ -98,7 +121,8 @@ def json_output():
             if not isinstance(directory_list, list):
                 directory_list = [directory_list]
             for directory in directory_list:
-                drive = identify_drive(file_path=directory, drives=system_drives)
+                drive = identify_drive(file_path=directory,
+                                       drives=system_drives)
                 if drive in drives[key]:
                     continue
                 drives[key].append(drive)
@@ -106,12 +130,19 @@ def json_output():
     running_work = {}
 
     jobs = load_jobs(config_jobs)
-    jobs, running_work = get_running_plots(jobs=jobs, running_work=running_work,
-                                           instrumentation_settings=instrumentation_settings)
-    check_log_progress(jobs=jobs, running_work=running_work, progress_settings=progress_settings,
-                       notification_settings=notification_settings, view_settings=view_settings,
+    jobs, running_work = get_running_plots(
+        jobs=jobs,
+        running_work=running_work,
+        instrumentation_settings=instrumentation_settings)
+    check_log_progress(jobs=jobs,
+                       running_work=running_work,
+                       progress_settings=progress_settings,
+                       notification_settings=notification_settings,
+                       view_settings=view_settings,
                        instrumentation_settings=instrumentation_settings)
-    print_json(jobs=jobs, running_work=running_work, view_settings=view_settings)
+    print_json(jobs=jobs,
+               running_work=running_work,
+               view_settings=view_settings)
 
     has_file = False
     if len(running_work.values()) == 0:
@@ -129,10 +160,17 @@ def json_output():
 
 
 def view(loop=True):
+    
+
+
     chia_location, log_directory, config_jobs, manager_check_interval, max_concurrent, max_for_phase_1, \
         minimum_minutes_between_jobs, progress_settings, notification_settings, debug_level, view_settings, \
         instrumentation_settings = get_config_info()
+        
     view_check_interval = view_settings['check_interval']
+    
+    healths = {}
+    to_kill_elapsed = 15 * view_check_interval  # 15 times of view_check_interval
     system_drives = get_system_drives()
     analysis = {'files': {}}
     drives = {'temp': [], 'temp2': [], 'dest': []}
@@ -149,7 +187,8 @@ def view(loop=True):
             if not isinstance(directory_list, list):
                 directory_list = [directory_list]
             for directory in directory_list:
-                drive = identify_drive(file_path=directory, drives=system_drives)
+                drive = identify_drive(file_path=directory,
+                                       drives=system_drives)
                 if drive in drives[key]:
                     continue
                 drives[key].append(drive)
@@ -157,16 +196,37 @@ def view(loop=True):
     while True:
         running_work = {}
         try:
-            analysis = analyze_log_dates(log_directory=log_directory, analysis=analysis)
+            analysis = analyze_log_dates(log_directory=log_directory,
+                                         analysis=analysis)
             jobs = load_jobs(config_jobs)
-            jobs, running_work = get_running_plots(jobs=jobs, running_work=running_work,
-                                                   instrumentation_settings=instrumentation_settings)
-            check_log_progress(jobs=jobs, running_work=running_work, progress_settings=progress_settings,
-                               notification_settings=notification_settings, view_settings=view_settings,
-                               instrumentation_settings=instrumentation_settings)
-            print_view(jobs=jobs, running_work=running_work, analysis=analysis, drives=drives,
-                       next_log_check=datetime.now() + timedelta(seconds=view_check_interval),
-                       view_settings=view_settings, loop=loop)
+            jobs, running_work = get_running_plots(
+                jobs=jobs,
+                running_work=running_work,
+                instrumentation_settings=instrumentation_settings)
+            check_log_progress(
+                jobs=jobs,
+                running_work=running_work,
+                progress_settings=progress_settings,
+                notification_settings=notification_settings,
+                view_settings=view_settings,
+                instrumentation_settings=instrumentation_settings)
+
+            print_view(jobs=jobs,
+                       running_work=running_work,
+                       analysis=analysis,
+                       drives=drives,
+                       next_log_check=datetime.now() +
+                       timedelta(seconds=view_check_interval),
+                       view_settings=view_settings,
+                       loop=loop)
+            print("******check the health and kill the stuck processes**********")
+
+            healths=health_check(healths=healths,
+                         running_work=running_work,
+                         to_kill_elapsed=to_kill_elapsed)
+
+            print("***************************************************")
+
             if not loop:
                 break
             time.sleep(view_check_interval)
