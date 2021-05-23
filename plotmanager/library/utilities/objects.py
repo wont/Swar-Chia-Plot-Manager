@@ -61,6 +61,7 @@ class Work:
     completed = False
 
     progress = 0
+    line_count = 0
     temp_file_size = 0
     k_size = None
 
