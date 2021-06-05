@@ -170,7 +170,7 @@ def view(loop=True):
     view_check_interval = view_settings['check_interval']
     
     healths = {}
-    to_kill_elapsed = 15 * view_check_interval  # 15 times of view_check_interval
+    to_kill_elapsed = 60 * view_settings['wait_to_kill_stuck']  #  
     system_drives = get_system_drives()
     analysis = {'files': {}}
     drives = {'temp': [], 'temp2': [], 'dest': []}
@@ -224,7 +224,7 @@ def view(loop=True):
             healths=health_check(healths=healths,
                          running_work=running_work,
                          to_kill_elapsed=to_kill_elapsed)
-
+            #print(json.dumps(running_work,default=serialize,indent=4,ensure_ascii=True));
             print("***************************************************")
 
             if not loop:

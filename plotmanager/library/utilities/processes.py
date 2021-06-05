@@ -244,6 +244,7 @@ def get_running_plots(jobs, running_work, instrumentation_settings):
         work.job = assumed_job
         work.log_file = log_file_path
         work.datetime_start = datetime_start
+        work.time_start = process.create_time();
         work.pid = process.pid
         work.plot_id = plot_id
         work.work_id = '?'

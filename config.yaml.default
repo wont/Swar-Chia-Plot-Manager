@@ -26,6 +26,7 @@ view:
   # These are the settings that will be used by the view.
   #
   #            check_interval: The number of seconds to wait before updating the view.
+  #        wait_to_kill_stuck: The minutes to wait before killing the stuck process.  if the log has not been change in 1 minute, start to count the time.
   #           datetime_format: The datetime format that you want displayed in the view. See here
   #                            for formatting: https://docs.python.org/3/library/datetime.html#strftime-and-strptime-format-codes
   # include_seconds_for_phase: This dictates whether seconds are included in the phase times.
@@ -33,7 +34,8 @@ view:
   #               include_cpu: This dictates whether the CPU information will be showed.
   #               include_ram: This dictates whether the RAM information will be showed.
   #        include_plot_stats: This dictates whether the plot stats will be showed.
-  check_interval: 60
+  check_interval: 60  
+  wait_to_kill_stuck: 30
   datetime_format: "%Y-%m-%d %H:%M:%S"
   include_seconds_for_phase: false
   include_drive_info: true

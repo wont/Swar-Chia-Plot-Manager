@@ -53,6 +53,7 @@ class Work:
     current_phase = 1
 
     datetime_start = None
+    time_start = 0
     datetime_end = None
 
     phase_times = {}

@@ -109,7 +109,7 @@ def _get_view_settings(config):
         raise InvalidYAMLConfigException('Failed to find view parameter in the YAML.')
     view = config['view']
     expected_parameters = ['datetime_format', 'include_seconds_for_phase', 'include_drive_info', 'include_cpu', 'include_ram',
-                           'include_plot_stats', 'check_interval']
+                           'include_plot_stats', 'check_interval','wait_to_kill_stuck']
     _check_parameters(parameter=view, expected_parameters=expected_parameters, parameter_type='view')
     return view
 
