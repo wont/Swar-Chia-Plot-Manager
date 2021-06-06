@@ -11,8 +11,9 @@ def health_check(healths, running_work, to_kill_elapsed):
         line_count = w.line_count
         progress = float(w.progress.strip('%'))
         temp_folder = w.job.temporary_directory[0]
+        name = w.job.name  
 
-        print(f'health check for: {rw}: ')
+        print(f'health check for {name} / {rw}： ({progress}%): ')
         to_print = ''
         if not rw in healths:
             h = {}
@@ -64,7 +65,6 @@ def health_check(healths, running_work, to_kill_elapsed):
 
                 to_print = f'\t it seems OK. last log count: {last_line_count}, current: {line_count}; est. {to_finish} to finish. pid: {rw}, temp: {temp_folder}'
         print(to_print)
-
     return healths
 
 
